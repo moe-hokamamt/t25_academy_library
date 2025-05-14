@@ -125,7 +125,6 @@ public class BookController {
 
     @PostMapping("/book/add")
     public String registBook(@Valid @ModelAttribute BookMstDto bookMstDto, Model model, RedirectAttributes ra) {
-        // modelattributeは画面とコントローラーをつなぐ
         try {
 
             String titleExist = bookMstDto.getTitle();

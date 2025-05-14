@@ -14,12 +14,9 @@ public interface BookMstRepository extends JpaRepository<BookMst, Long> {
 	@Query(value = "SELECT * FROM book_mst LIMIT 1000", nativeQuery = true) // 書籍データを取るためにアクセス中
 	List<BookMst> findLimitedBook();
 
-	@Query(value = "SELECT * FROM book_mst WHERE id = ?1 ", nativeQuery = true)
+	@Query(value = "SELECT * FROM book_mst WHERE id = ?1 deleted_at IS NULL", nativeQuery = true)
 	Optional<BookMst> selectById(Long id);
 
-	@Query(value = "SELECT * FROM book_mst WHERE isbn = ?1", nativeQuery = true)
+	@Query(value = "SELECT * FROM book_mst WHERE isbn = ?1 deleted_at IS NULL", nativeQuery = true)
 	BookMst selectByIsbn(String isbn);
-
-	@Query(value = "SELECT * FROM book_mst WHERE deleted_at IS NOT NULL", nativeQuery = true)
-	List<BookMst> findDeletedBooks();
 }

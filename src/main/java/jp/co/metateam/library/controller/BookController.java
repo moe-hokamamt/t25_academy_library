@@ -51,6 +51,11 @@ public class BookController {
     public String edit(@PathVariable Long id, Model model) {
         // データベースから指定されたIDの本情報を取得
         BookMstDto bookMstDto = bookMstService.selectById(id); // bookMstServiceはデータベースから本を取得するサービス
+        if (bookMstDto == null){
+                model.addAttribute("isShowPopUp","true");
+                model.addAttribute("noExist", "該当する書籍が存在しません");
+                return "book/edit";
+            }
         model.addAttribute("bookMstDto", bookMstDto);
         return "book/edit";
 
@@ -63,14 +68,17 @@ public class BookController {
         try {
             BookMstDto originBookMstDto = bookMstService.selectById(bookMstDto.getId());
 
-            if (originBookMstDto == null) {
-                model.addAttribute("error", "該当する書籍が存在しません");
+            if (originBookMstDto == null){
+                model.addAttribute("isShowPopUp","true");
+                model.addAttribute("noExist", "該当する書籍が存在しません");
                 return "book/edit";
             }
+            
             boolean isTitleChanged = !bookMstDto.getTitle().equals(originBookMstDto.getTitle());//異なっていたらtrue
             boolean isIsbnChanged = !bookMstDto.getIsbn().equals(originBookMstDto.getIsbn());
 
             if (!isTitleChanged && !isIsbnChanged){
+                model.addAttribute("isShowPopUp","true");
                 model.addAttribute("noChange", "変更が行われていません");
                 return "book/edit"; // 変更がない場合はそのまま編集画面に戻す
             }
@@ -78,16 +86,14 @@ public class BookController {
             String titleExist = bookMstDto.getTitle();
             String IsbnExist = bookMstDto.getIsbn();
 
-            List<String> errTitleList = isvalidtitle(titleExist);
+            List<String> errTitleList = isValidTitle(titleExist);
 
-            List<String> errIsbnList = isvalidisbn(IsbnExist);
+            List<String> errIsbnList = isValidIsbn(IsbnExist);
 
             if (errIsbnList.isEmpty()) {
                 errIsbnList = isIsbnDuplicate(IsbnExist);
             }
 
-            // if err
-            // return book/add;
             if (!errTitleList.isEmpty() || !errIsbnList.isEmpty()) {
                 model.addAttribute("errTitle", errTitleList);
                 model.addAttribute("errIsbn", errIsbnList);
@@ -119,16 +125,15 @@ public class BookController {
 
     @PostMapping("/book/add")
     public String registBook(@Valid @ModelAttribute BookMstDto bookMstDto, Model model, RedirectAttributes ra) {
-
         // modelattributeは画面とコントローラーをつなぐ
         try {
 
             String titleExist = bookMstDto.getTitle();
             String IsbnExist = bookMstDto.getIsbn();
 
-            List<String> errTitleList = isvalidtitle(titleExist);
+            List<String> errTitleList = isValidTitle(titleExist);
 
-            List<String> errIsbnList = isvalidisbn(IsbnExist);
+            List<String> errIsbnList = isValidIsbn(IsbnExist);
 
             if (errIsbnList.isEmpty()) {
                 errIsbnList = isIsbnDuplicate(IsbnExist);
@@ -154,23 +159,19 @@ public class BookController {
         }
     }
 
-    private List<String> isIsbnDuplicate(String IsbnExist) {
-        BookMst selectCount = null;
+    private List<String> isIsbnDuplicate(String isbnExist) {
+        BookMst IsbnDuplicate  = null;
         List<String> errIsbnList = new ArrayList<>();
-        selectCount = this.bookMstService.selectByIsbn(IsbnExist);
+        IsbnDuplicate = this.bookMstService.selectByIsbn(isbnExist);
 
-        if (selectCount != null) {
+        if (IsbnDuplicate != null) {
             errIsbnList.add("登録済みのISBNです");
             return errIsbnList;
         }
         return errIsbnList;
-        // if (!errTitleList.isEmpty() || !errIsbnList.isEmpty()) {
-        // model.addAttribute("errTitle", errTitleList);
-        // model.addAttribute("errIsbn", errIsbnList);
-        // return "book/add";
     }
 
-    private List<String> isvalidisbn(String IsbnExist) {
+    private List<String> isValidIsbn(String IsbnExist) {
         List<String> errIsbnList = new ArrayList<>();
 
         if (StringUtils.isEmpty(IsbnExist)) {
@@ -190,7 +191,7 @@ public class BookController {
         return errIsbnList;
     }
 
-    private List<String> isvalidtitle(String titleExist) {
+    private List<String> isValidTitle(String titleExist) {
         List<String> errTitleList = new ArrayList<>();
 
         if (StringUtils.isEmpty(titleExist)) {

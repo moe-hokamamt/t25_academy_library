@@ -25,36 +25,54 @@
 .button {
   text-align: right;
 }
+
 .popup-toggle {
-    display: none;
+  display: none;
 }
-
-.popup-toggle:checked + .popup-overlay {
-    display: block;
-}
-
 .popup-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    position: fixed;
+  inset: 0;
+  margin: auto;
+  margin-bottom: 400px;
+  width: 100%; /* 必要に応じて幅を調整 */
+  max-width: 600px; /* 最大幅を指定 */
+  height: auto;
+  max-height: 80%; /* 最大高さを指定 */
+    /* width: 100%; */
+    /* height: 100%; */
     display: none;
     justify-content: center;
     align-items: center;
+    z-index: 1000;
 }
 
+/* ポップアップの中身 */
 .popup-window {
-    background: white;
+    background: #fff;
     padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    min-width: 300px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    
 }
 
+/* チェックされたときにポップアップを表示 */
+.popup-toggle:checked ~ .popup-overlay {
+    display: flex;
+}
+.popup-toggle:checked ~ .popup-close {
+    display: flex;
+}
+
+/* 閉じるラベル（×ボタン） */
 .popup-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 450px;
+    font-size: 30px;
+    color: rgb(86, 86, 86);
     cursor: pointer;
+    z-index: 1001;
 }

@@ -21,20 +21,20 @@ import jp.co.metateam.library.repository.BookMstRepository;
 public class BookMstService {
 
     private final BookMstRepository bookMstRepository;
-    
+
     @Autowired
-    public BookMstService(BookMstRepository bookMstRepository){
+    public BookMstService(BookMstRepository bookMstRepository) {
         this.bookMstRepository = bookMstRepository;
     }
-    
+
     public List<BookMstDto> findAvailableWithStockCount() {
         List<BookMst> books = this.bookMstRepository.findLimitedBook();
-        List<BookMstDto> bookMstDtoList = new ArrayList<BookMstDto>();//インスタンス化43行目までいったらadd?
+        List<BookMstDto> bookMstDtoList = new ArrayList<BookMstDto>();// インスタンス化43行目までいったらadd?
 
         // 書籍の在庫数を取得
         // FIXME: 現状は書籍ID毎にDBに問い合わせている。一度のSQLで完了させたい。
-        for (int i = 0; i < books.size(); i++) {//取ってきた書籍の数分繰り返す
-            BookMst book = books.get(i);//  bookmstの型からbookmutdtoにセットしなおす(bookmstだと良くない)
+        for (int i = 0; i < books.size(); i++) {// 取ってきた書籍の数分繰り返す
+            BookMst book = books.get(i);// bookmstの型からbookmutdtoにセットしなおす(bookmstだと良くない)
             BookMstDto bookMstDto = new BookMstDto();
             bookMstDto.setId(book.getId());
             bookMstDto.setIsbn(book.getIsbn());
@@ -44,8 +44,9 @@ public class BookMstService {
 
         return bookMstDtoList;
     }
-    public BookMst selectByIsbn(String isbn) {
-        return this.bookMstRepository.selectByIsbn(isbn);
+
+    public BookMst findByIsbn(String isbn) {
+        return this.bookMstRepository.findByIsbn(isbn);
     }
 
     @Transactional
@@ -56,29 +57,43 @@ public class BookMstService {
 
             bookMst.setTitle(bookMstDto.getTitle());
             bookMst.setIsbn(bookMstDto.getIsbn());
-            //後日void saveとbookMstRepositoryのsave
 
             // データベースへの保存
             this.bookMstRepository.save(bookMst);
+
         } catch (Exception e) {
             throw e;
         }
     }
-    
-    public BookMstDto selectById(Long id) {
-    BookMst book = bookMstRepository.selectById(id).orElse(null);
-    if (book == null) return null;
-    BookMstDto dto = new BookMstDto();               // DTO を作成
-    dto.setId(book.getId());                         // 値をコピー
-    dto.setTitle(book.getTitle());
-    dto.setIsbn(book.getIsbn());
 
+    public BookMstDto findById(Long id) {
+        BookMst book = bookMstRepository.findById(id).orElse(null);
+        if (book == null)
+            return null;
+        BookMstDto dto = new BookMstDto(); // DTO を作成
+        dto.setId(book.getId()); // 値をコピー
+        dto.setTitle(book.getTitle());
+        dto.setIsbn(book.getIsbn());
 
-    return dto;                                      // DTO を返す
+        return dto; // DTO を返す
+    }
+
+    public void updateBook(Long id, String title, String isbn) {
+
+        Optional<BookMst> bookMstOptional = bookMstRepository.findById(id);
+        if (bookMstOptional.isPresent()) {
+
+            BookMst bookMst = bookMstOptional.get();
+            // BookMst bookMstOptinal = new BookMst();
+            bookMst.setTitle(title);
+            bookMst.setIsbn(isbn);
+
+            this.bookMstRepository.save(bookMst);
+        } else {
+
+            return;
+        }
+
     }
 
 }
-
-
-
-

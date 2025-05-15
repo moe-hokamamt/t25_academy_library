@@ -50,48 +50,53 @@ public class BookController {
     @GetMapping("/book/edit/{id}")
     public String edit(@PathVariable Long id, Model model) {
         // データベースから指定されたIDの本情報を取得
-        BookMstDto bookMstDto = bookMstService.selectById(id); // bookMstServiceはデータベースから本を取得するサービス
-        if (bookMstDto == null){
-                model.addAttribute("isShowPopUp","true");
-                model.addAttribute("noExist", "該当する書籍が存在しません");
-                return "book/edit";
-            }
+        BookMstDto bookMstDto = bookMstService.findById(id); // bookMstServiceはデータベースから本を取得するサービス
+        
+
+        if (bookMstDto == null) {
+            model.addAttribute("isShowPopUp", "true");
+            model.addAttribute("noExist", "該当する書籍が存在しません");
+            return "book/edit";
+        }
         model.addAttribute("bookMstDto", bookMstDto);
         return "book/edit";
 
     }
 
     @PostMapping("/book/edit")
-    public String edit(@Valid @ModelAttribute BookMstDto bookMstDto, Model model, RedirectAttributes ra) {
+    public String edit(@Valid @ModelAttribute BookMstDto bookMstDto,Long id, String title, String isbn, Model model, RedirectAttributes ra) {
         // modelattributeは画面とコントローラーをつなぐ
 
         try {
-            BookMstDto originBookMstDto = bookMstService.selectById(bookMstDto.getId());
+            BookMstDto originBookMstDto = bookMstService.findById(bookMstDto.getId());
+            // DBから書籍情報を取ってきている originがDBからきたやつ？
 
-            if (originBookMstDto == null){
-                model.addAttribute("isShowPopUp","true");
+            if (originBookMstDto == null) {
+                // model.addAttribute("isShowPopUp", "true");
                 model.addAttribute("noExist", "該当する書籍が存在しません");
                 return "book/edit";
             }
-            
-            boolean isTitleChanged = !bookMstDto.getTitle().equals(originBookMstDto.getTitle());//異なっていたらtrue
+            // DBから該当書籍がなくなっていたらポップアップ表示
+
+            boolean isTitleChanged = !bookMstDto.getTitle().equals(originBookMstDto.getTitle());// 異なっていたらtrue
             boolean isIsbnChanged = !bookMstDto.getIsbn().equals(originBookMstDto.getIsbn());
 
-            if (!isTitleChanged && !isIsbnChanged){
-                model.addAttribute("isShowPopUp","true");
+            if (!isTitleChanged && !isIsbnChanged) {
+                // model.addAttribute("isShowPopUp", "true");
                 model.addAttribute("noChange", "変更が行われていません");
                 return "book/edit"; // 変更がない場合はそのまま編集画面に戻す
             }
-
+            // バリデーションチェック
             String titleExist = bookMstDto.getTitle();
-            String IsbnExist = bookMstDto.getIsbn();
+            String isbnExist = bookMstDto.getIsbn();
+            Long idExist = bookMstDto.getId();
 
             List<String> errTitleList = isValidTitle(titleExist);
 
-            List<String> errIsbnList = isValidIsbn(IsbnExist);
+            List<String> errIsbnList = isValidIsbn(isbnExist);
 
             if (errIsbnList.isEmpty()) {
-                errIsbnList = isIsbnDuplicate(IsbnExist);
+                errIsbnList = isIsbnDuplicate(isbnExist);
             }
 
             if (!errTitleList.isEmpty() || !errIsbnList.isEmpty()) {
@@ -99,10 +104,14 @@ public class BookController {
                 model.addAttribute("errIsbn", errIsbnList);
                 return "book/edit";
             }
-            model.addAttribute("success", "書籍情報が正常に更新されました");
-            bookMstService.save(bookMstDto);
-      
+            bookMstService.updateBook(id, title, isbn);
+            // BookMstDto updatedBook  = bookMstService.updateBook();
+            // model.addAttribute("book", updatedBook);
+
+            // model.addAttribute("success", "書籍情報が正常に更新されました");
+
             return "redirect:/book/index";
+
         } catch (Exception e) {
             log.error(e.getMessage());
 
@@ -159,33 +168,31 @@ public class BookController {
     }
 
     private List<String> isIsbnDuplicate(String isbnExist) {
-        BookMst IsbnDuplicate  = null;
+        BookMst isbnDuplicate = null;
         List<String> errIsbnList = new ArrayList<>();
-        IsbnDuplicate = this.bookMstService.selectByIsbn(isbnExist);
+        isbnDuplicate = this.bookMstService.findByIsbn(isbnExist);
 
-        if (IsbnDuplicate != null) {
+        if (isbnDuplicate != null) {
             errIsbnList.add("登録済みのISBNです");
             return errIsbnList;
         }
         return errIsbnList;
     }
 
-    private List<String> isValidIsbn(String IsbnExist) {
+    private List<String> isValidIsbn(String isbnExist) {
         List<String> errIsbnList = new ArrayList<>();
 
-        if (StringUtils.isEmpty(IsbnExist)) {
+        if (StringUtils.isEmpty(isbnExist)) {
             errIsbnList.add("ISBNは必須です");
             return errIsbnList;
         }
 
-        if (IsbnExist != null && IsbnExist.length() != 13) {
+        if (isbnExist != null && isbnExist.length() != 13) {
             errIsbnList.add("ISBNは13文字で入力してください");
-            return errIsbnList;
         }
 
-        if (IsbnExist != null && !IsbnExist.matches("^[0-9]+$")) {
+        if (isbnExist != null && !isbnExist.matches("^[0-9]+$")) {
             errIsbnList.add("ISBNの形式が不正です");
-            return errIsbnList;
         }
         return errIsbnList;
     }
@@ -200,7 +207,6 @@ public class BookController {
 
         if (titleExist != null && titleExist.length() > 255) {
             errTitleList.add("書籍名は255文字以内で入力してください");
-            return errTitleList;
         }
         return errTitleList;
     }

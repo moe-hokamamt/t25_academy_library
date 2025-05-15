@@ -9,23 +9,34 @@
 
 <body>
     <!-- エラーメッセージの表示 -->
-     <input type="checkbox" id="popup-toggle" class="popup-toggle" th:checked="${isShowPopUp}">
+    <input type="checkbox" id="noExist-popup-toggle" class="noExist-popup-toggle" th:checked="${noExist}">
+    <a th:href="@{/book/index}" class="noExist-popup-close">×</a> 
+     
+         <!-- <label for="noExist-popup-toggle" class="noExist-popup-close">×</label> -->
+    
+    <div class="noExist-popup-overlay">
+        <div class="noExist-popup-window">
+            <span th:text="${noExist}"></span>
+        </div>
+    </div>
+    </input>
+    <input type="checkbox" id="popup-toggle" class="popup-toggle" th:checked="${noChange}">
     <label for="popup-toggle" class="popup-close">×</label>
     <div class="popup-overlay">
         <div class="popup-window">
-            <span th:text="${noExist}"></span>
             <span th:text="${noChange}"></span>
         </div>
     </div>
-</input>
+    </input>
+
     <div class="contents">
         <div th:replace="~{common :: main_sidebar}"></div>
         <div class="main_contents">
             <div th:replace="~{common :: header}"></div>
             <div class="inner_contens">
-                <div class="page_title">書籍変更</div>
+                <div class="page_title">書籍編集</div>
                 <div class="page_contents">
-                 <form id="book_edit_form" th:object="${bookMstDto}" th:action="@{/book/edit}" method="post">
+                    <form id="book_edit_form" th:object="${bookMstDto}" th:action="@{/book/edit}" method="post">
                         <span class="text red" style="color: red"><span>*</span>は必須項目です</span>
                         <p><span style="color: red">*</span>書籍名<br>
                             <input type="text" size="100" name="title" th:field="*{title}"></input>

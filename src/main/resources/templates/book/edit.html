@@ -8,17 +8,39 @@
 </head>
 
 <body>
+    <!-- エラーメッセージの表示 -->
+    <input type="checkbox" id="noExist-popup-toggle" class="noExist-popup-toggle" th:checked="${noExist}">
+    <a th:href="@{/book/index}" class="noExist-popup-close">×</a> 
+     
+         <!-- <label for="noExist-popup-toggle" class="noExist-popup-close">×</label> -->
+    
+    <div class="noExist-popup-overlay">
+        <div class="noExist-popup-window">
+            <span th:text="${noExist}"></span>
+        </div>
+    </div>
+    </input>
+    <input type="checkbox" id="popup-toggle" class="popup-toggle" th:checked="${noChange}">
+    <label for="popup-toggle" class="popup-close">×</label>
+    <div class="popup-overlay">
+        <div class="popup-window">
+            <span th:text="${noChange}"></span>
+        </div>
+    </div>
+    </input>
+
     <div class="contents">
         <div th:replace="~{common :: main_sidebar}"></div>
         <div class="main_contents">
             <div th:replace="~{common :: header}"></div>
             <div class="inner_contens">
-                <div class="page_title">書籍登録</div>
+                <div class="page_title">書籍編集</div>
                 <div class="page_contents">
-                    <form id="book_register_form" th:object="${bookMstDto}" th:action="@{/book/add}" method="post">
+                    <form id="book_edit_form" th:object="${bookMstDto}" th:action="@{/book/edit}" method="post">
                         <span class="text red" style="color: red"><span>*</span>は必須項目です</span>
                         <p><span style="color: red">*</span>書籍名<br>
-                            <input type="text" size="100" name="title" th:field="*{title}" placeholder="書籍名を入力">
+                            <input type="text" size="100" name="title" th:field="*{title}"></input>
+
                         <div class="error_msg" th:if="${errTitle}">
                             <div th:each="msg : ${errTitle}">
                                 <p th:text="${msg}" style="color: red"></p>
@@ -26,13 +48,14 @@
                         </div>
                         </p>
                         <p><span style="color: red">*</span>ISBN<br>
-                            <input type="text" size="100" name="isbn" th:field="*{isbn}" placeholder="ISBNを入力">
+                            <input type="text" size="100" name="isbn" th:field="*{isbn}"></input>
                         <div class="error_msg" th:if="${errIsbn}">
                             <div th:each="msg : ${errIsbn}">
                                 <p th:text="${msg}" style="color: red"></p>
                             </div>
                         </div>
-                        <div><button type="submit">保存</button></div>
+                        <input type="hidden" name="id" th:field="*{id}"></input>
+                        <div><button type="submit">変更</button></div>
                     </form>
 
                     <span>
